@@ -9,6 +9,7 @@ wget -P ~/tmp/downloads \
          http://www.freedesktop.org/software/fontconfig/release/fontconfig-2.11.1.tar.bz2 \
          http://xmlsoft.org/sources/libxml2-2.9.2.tar.gz \
          http://poppler.freedesktop.org/poppler-0.37.0.tar.xz \
+         https://poppler.freedesktop.org/poppler-data-0.4.7.tar.gz \
 && ls ~/tmp/downloads/*.tar.* | xargs -i tar xf {} -C ~/tmp/libs/
 
 pushd .
@@ -57,12 +58,17 @@ PKG_CONFIG_PATH=~/tmp/usr/lib/pkgconfig/:$FONTCONFIG_PKG:$PKG_CONFIG_PATH \
 
 make install DESTDIR="/home/ec2-user/tmp/install"
 
+####################################
+cd ~/tmp/libs/poppler-data*
+make prefix=~/tmp/install/var/task install
+
+####################################
+
 unset FONTCONFIG_PKG
 popd
 
 tar -C ~/tmp/install/var/task \
     --exclude='include' \
-    --exclude='share'   \
     -zcvf ~/tmp/tar/poppler.tar.gz .
 
 aws s3 cp ~/tmp/tar/poppler.tar.gz s3://"${S3BUCKET}"/poppler.tar.gz
